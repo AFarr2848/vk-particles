@@ -1,0 +1,55 @@
+#pragma once
+
+#include <memory>
+#include "engine/Structs.hpp"
+
+class fe_Window;
+class fe_VulkanContext;
+class fe_TimingData;
+class fe_Swapchain;
+class fe_BufferManager;
+class fe_ShaderManager;
+class fe_World;
+class fe_InputHelper;
+class fe_TextureManager;
+
+class fe_Engine {
+ public:
+  fe_Engine();
+  ~fe_Engine();
+
+  // vroom
+  void startEngine();
+  void run();
+
+ private:
+  std::vector<fe_DrawInfo> drawInfos = {};
+
+  fe_FrameContext frameContext;
+
+  /**
+   * @brief Handles timing, increments frame stuff, inits and submits the
+   * command buffer, and calls buffer updates and command records
+   */
+  void drawFrame();
+
+  void recordCommandBuffer(uint32_t imageIndex);
+
+  /**
+   * @brief Does all the BS to the command buffer that's required in absence of
+   * a pipeline
+   */
+  void configCommandBuffer();
+
+  // TODO: Move me
+
+  std::unique_ptr<fe_Window> win;
+  std::unique_ptr<fe_VulkanContext> ctx;
+  std::unique_ptr<fe_Swapchain> swp;
+  std::unique_ptr<fe_TimingData> tim;
+  std::unique_ptr<fe_ShaderManager> shaderMan;
+  std::unique_ptr<fe_BufferManager> bufferMan;
+  std::unique_ptr<fe_TextureManager> texMan;
+  std::unique_ptr<fe_World> world;
+  std::unique_ptr<fe_InputHelper> inputHelper;
+};
