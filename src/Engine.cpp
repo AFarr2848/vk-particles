@@ -5,6 +5,7 @@
 #include <memory>
 #include <vulkan/vulkan_hpp_macros.hpp>
 #include <vulkan/vulkan_raii.hpp>
+#include "Config.hpp"
 #include "engine/Structs.hpp"
 #include "engine/Swapchain.hpp"
 #include "engine/Timing.hpp"
@@ -37,22 +38,23 @@ void fe_Engine::startEngine() {
   world->init();
 
   texMan->loadTextures();
-  texMan->addTextureFromColor(glm::vec3(1.0f, 0.0f, 1.0f), "pink");
-  texMan->addTextureFromColor(glm::vec3(1.0f, 0.0f, 0.0f), "red");
+  // texMan->addTextureFromColor(glm::vec3(1.0f, 0.0f, 1.0f), "pink");
+  // texMan->addTextureFromColor(glm::vec3(1.0f, 0.0f, 0.0f), "red");
 
   std::cout << "Loading shader modules..." << std::endl;
   shaderMan->loadShaderModule(
-      "triangle_vert", "build/shaders/triangle_vert.spv",
-      vk::ShaderStageFlagBits::eVertex, texMan->texSetLayout);
+      "initParticles_comp", "build/shaders/initParticles_comp.spv",
+      vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
   shaderMan->loadShaderModule(
-      "triangle_frag", "build/shaders/triangle_frag.spv",
+      "particles_comp", "build/shaders/particles_comp.spv",
+      vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
+
+  shaderMan->loadShaderModule(
+      "drawParticles_frag", "build/shaders/drawParticles_frag.spv",
       vk::ShaderStageFlagBits::eFragment, texMan->texSetLayout);
-  shaderMan->loadShaderModule("normals_vert", "build/shaders/normals_vert.spv",
-                              vk::ShaderStageFlagBits::eVertex,
-                              texMan->texSetLayout);
-  shaderMan->loadShaderModule("normals_frag", "build/shaders/normals_frag.spv",
-                              vk::ShaderStageFlagBits::eFragment,
-                              texMan->texSetLayout);
+  shaderMan->loadShaderModule(
+      "drawParticles_vert", "build/shaders/drawParticles_vert.spv",
+      vk::ShaderStageFlagBits::eVertex, texMan->texSetLayout);
 
   std::vector<fe_Vertex> vertices = {};
   std::vector<uint32_t> indices = {};
@@ -61,13 +63,15 @@ void fe_Engine::startEngine() {
   world->prepareDraw(vertices, indices, drawInfos);
 
   std::cout << "Creating buffers..." << std::endl;
-  bufferMan->createMeshBuffer(vertices, indices);
-  bufferMan->createTransformBuffer(sizeof(glm::mat4) *
-                                   world->transforms.size());
-  bufferMan->createWorldBuffer();
+  // bufferMan->createMeshBuffer(vertices, indices);
+  // bufferMan->createTransformBuffer(sizeof(glm::mat4) *
+  //                                 world->transforms.size());
+  // bufferMan->createWorldBuffer();
+  bufferMan->createParticleBuffer();
 
-  std::cout << "Loading textures..." << std::endl;
-  ctx->createPipelineLayout(texMan->texSetLayout);
+  ctx->createPipelineLayout();
+
+  initParticles();
 }
 
 void fe_Engine::run() {
@@ -85,14 +89,79 @@ void fe_Engine::run() {
 
     inputHelper->updateInputs();
     world->processInput(frameContext);
-    world->transformShapes();
-    fe_WorldData worldData = world->getWorldData(frameContext);
+    // world->transformShapes();
+    // fe_WorldData worldData = world->getWorldData(frameContext);
 
-    bufferMan->updateTransformBuffer(world->transforms);
-    bufferMan->updateWorldBuffer(worldData);
+    // bufferMan->updateTransformBuffer(world->transforms);
+    // bufferMan->updateWorldBuffer(worldData);
     drawFrame();
   }
   ctx->device.waitIdle();
+}
+
+void fe_Engine::startCompute() {
+  fe_PushConstants pc{.particleBufAddress = bufferMan->particleBufferAddress,
+                      .deltaTime = tim->deltaTime,
+                      .particleCount = MAX_PARTICLES};
+
+  vk::CommandBuffer cmd = tim->getCurrentCmdBuffer();
+  uint32_t localSizeX = 256;
+  uint32_t groupCountX = (MAX_PARTICLES + localSizeX - 1) / localSizeX;
+
+  cmd.pushConstants(ctx->pipelineLayout,
+                    vk::ShaderStageFlagBits::eCompute |
+                        vk::ShaderStageFlagBits::eFragment |
+                        vk::ShaderStageFlagBits::eVertex,
+                    0, sizeof(pc), &pc);
+
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eCompute,
+                     shaderMan->getShader("particles_comp"));
+
+  cmd.dispatch(groupCountX, 1, 1);
+
+  vk::BufferMemoryBarrier2 particleBarrier{
+      .srcStageMask = vk::PipelineStageFlagBits2::eComputeShader,
+      .srcAccessMask = vk::AccessFlagBits2::eShaderWrite,
+
+      .dstStageMask = vk::PipelineStageFlagBits2::eVertexShader,
+      .dstAccessMask = vk::AccessFlagBits2::eShaderRead,
+
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+
+      .buffer = bufferMan->particleBuffer,
+      .offset = 0,
+      .size = vk::WholeSize
+
+  };
+
+  vk::DependencyInfo dependencyInfo{.bufferMemoryBarrierCount = 1,
+                                    .pBufferMemoryBarriers = &particleBarrier};
+
+  cmd.pipelineBarrier2(dependencyInfo);
+}
+
+void fe_Engine::initParticles() {
+  std::unique_ptr<vk::raii::CommandBuffer> cmd = tim->beginSingleTimeCommands();
+
+  fe_PushConstants pc{.particleBufAddress = bufferMan->particleBufferAddress,
+                      .deltaTime = tim->deltaTime,
+                      .particleCount = MAX_PARTICLES};
+
+  uint32_t localSizeX = 256;
+  uint32_t groupCountX = (MAX_PARTICLES + localSizeX - 1) / localSizeX;
+
+  cmd->pushConstants(ctx->pipelineLayout,
+                     vk::ShaderStageFlagBits::eCompute |
+                         vk::ShaderStageFlagBits::eFragment |
+                         vk::ShaderStageFlagBits::eVertex,
+                     0, sizeof(pc), &pc);
+  cmd->bindShadersEXT(vk::ShaderStageFlagBits::eCompute,
+                      shaderMan->getShader("initParticles_comp"));
+
+  cmd->dispatch(groupCountX, 1, 1);
+
+  tim->endSingleTimeCommands(*cmd);
 }
 
 void fe_Engine::recordCommandBuffer(uint32_t imageIndex) {
@@ -145,6 +214,8 @@ void fe_Engine::recordCommandBuffer(uint32_t imageIndex) {
 
   };
 
+  startCompute();
+
   cmd.beginRendering(renderingInfo);
 
   // Bind texture set
@@ -159,38 +230,30 @@ void fe_Engine::recordCommandBuffer(uint32_t imageIndex) {
       .pDynamicOffsets = nullptr,
   };
 
-  cmd.bindDescriptorSets2(bindInfo);
+  // cmd.bindDescriptorSets2(bindInfo);
 
-  for (auto& info : drawInfos) {
-    // bind shaders
-    cmd.bindShadersEXT(vk::ShaderStageFlagBits::eVertex,
-                       shaderMan->getShader(info.material.shader + "_vert"));
-    cmd.bindShadersEXT(vk::ShaderStageFlagBits::eFragment,
-                       shaderMan->getShader(info.material.shader + "_frag"));
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eVertex,
+                     shaderMan->getShader("drawParticles_vert"));
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eFragment,
+                     shaderMan->getShader("drawParticles_frag"));
 
-    // misc. config
-    configCommandBuffer();
+  // misc. config
+  configCommandBuffer();
 
-    // push constants
-    fe_PushConstants pcData = {
-        .vertBufAddress = bufferMan->meshBufferAddress,
-        .transformBufAddress = bufferMan->transformBufferAddress,
-        .worldBufAddress = bufferMan->worldBufferAddress,
-        .transformIndex = info.transformIndex,
-        .vertexOffset = info.vertexOffset,
-        .imageIndex = texMan->getTextureIndex(info.material.texture)
+  // push constants
+  fe_PushConstants pcData = {
+      .particleBufAddress = bufferMan->particleBufferAddress,
+      .deltaTime = tim->deltaTime,
+      .particleCount = MAX_PARTICLES
 
-    };
-    cmd.pushConstants(
-        ctx->pipelineLayout,
-        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        0, sizeof(fe_PushConstants), &pcData);
+  };
+  cmd.pushConstants(ctx->pipelineLayout,
+                    vk::ShaderStageFlagBits::eVertex |
+                        vk::ShaderStageFlagBits::eFragment |
+                        vk::ShaderStageFlagBits::eCompute,
+                    0, sizeof(fe_PushConstants), &pcData);
 
-    cmd.bindIndexBuffer(bufferMan->meshBuffer, bufferMan->verticesSize,
-                        vk::IndexType::eUint32);
-
-    cmd.drawIndexed(info.indexCount, 1, info.indexOffset, 0, 0);
-  }
+  cmd.draw(4, MAX_PARTICLES, 0, 0);
 
   tim->getCurrentCmdBuffer().endRendering();
 
@@ -331,19 +394,19 @@ void fe_Engine::configCommandBuffer() {
   cmd.setScissorWithCountEXT(scissor);
 
   // 2. Input Assembly
-  cmd.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleList);
+  cmd.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleStrip);
   cmd.setPrimitiveRestartEnableEXT(VK_FALSE);
 
   // 3. Rasterization State
   cmd.setRasterizerDiscardEnableEXT(VK_FALSE);
   cmd.setPolygonModeEXT(vk::PolygonMode::eFill);
-  cmd.setCullModeEXT(vk::CullModeFlagBits::eBack);
+  cmd.setCullModeEXT(vk::CullModeFlagBits::eNone);
   cmd.setFrontFaceEXT(vk::FrontFace::eCounterClockwise);
   cmd.setDepthBiasEnableEXT(VK_FALSE);
 
   // 4. Depth & Stencil Testing
-  cmd.setDepthTestEnableEXT(VK_TRUE);
-  cmd.setDepthWriteEnableEXT(VK_TRUE);
+  cmd.setDepthTestEnableEXT(vk::False);
+  cmd.setDepthWriteEnableEXT(vk::False);
   cmd.setDepthBoundsTestEnableEXT(VK_FALSE);
   cmd.setStencilTestEnableEXT(VK_FALSE);
   // reverse Z depth

@@ -22,6 +22,7 @@ uint32_t fe_World::addShape(fe_Shape shape,
 void fe_World::transformShapes() {}
 
 void fe_World::processInput(fe_FrameContext frameContext) {
+  /*
   if (inputHelper.isKeyDown('A')) {
     camera.processKeyboard(LEFT, frameContext.deltaTime);
   }
@@ -39,6 +40,7 @@ void fe_World::processInput(fe_FrameContext frameContext) {
 
   camera.ProcessMouseMovement(inputHelper.getMouseOffsets().x,
                               inputHelper.getMouseOffsets().y);
+  */
 }
 
 void fe_World::prepareDraw(std::vector<fe_Vertex>& vertices,
@@ -76,12 +78,4 @@ fe_WorldData fe_World::getWorldData(fe_FrameContext frameContext) {
   return worldData;
 }
 
-void fe_World::createShapes() {
-  glm::mat4 id = glm::mat4(1.0f);
-
-  addShape({fe_Cube()}, id, {.shader = "triangle", .texture = "rainbow.png"});
-  addShape({fe_Cube()}, glm::translate(id, glm::vec3(2.0f, 2.0f, 2.0f)),
-           {.shader = "normals", .texture = "red"});
-  addShape(fe_Icosphere(3), glm::translate(id, glm::vec3(-2.0f, -2.0f, -2.0f)),
-           {.shader = "triangle", .texture = "earth.png"});
-}
+void fe_World::createShapes() {}

@@ -9,25 +9,20 @@
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
-void fe_VulkanContext::createPipelineLayout(
-    vk::raii::DescriptorSetLayout& texLayout) {
+void fe_VulkanContext::createPipelineLayout() {
   vk::PushConstantRange pcRange = {
 
-      .stageFlags =
-          vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+      .stageFlags = vk::ShaderStageFlagBits::eVertex |
+                    vk::ShaderStageFlagBits::eFragment |
+                    vk::ShaderStageFlagBits::eCompute,
       .offset = 0,
       .size = sizeof(fe_PushConstants)
 
   };
 
-  vk::DescriptorSetLayout layout = texLayout;
-
   vk::PipelineLayoutCreateInfo layoutInfo = {
 
-      .setLayoutCount = 1,
-      .pSetLayouts = &layout,
-      .pushConstantRangeCount = 1,
-      .pPushConstantRanges = &pcRange
+      .pushConstantRangeCount = 1, .pPushConstantRanges = &pcRange
 
   };
   pipelineLayout = device.createPipelineLayout(layoutInfo);

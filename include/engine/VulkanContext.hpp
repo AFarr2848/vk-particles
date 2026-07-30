@@ -61,7 +61,8 @@ class fe_VulkanContext {
    * @brief Creates the pipeline layout. Needs to be called seperately and after
    * the texture set layout has been created.
    */
-  void createPipelineLayout(vk::raii::DescriptorSetLayout& texLayout);
+  void createPipelineLayout();
+
   //
   // some util stuff
   //

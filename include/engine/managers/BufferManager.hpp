@@ -20,6 +20,8 @@ class fe_BufferManager {
   void createWorldBuffer();
   void updateWorldBuffer(fe_WorldData data);
 
+  void createParticleBuffer();
+
   // Contains vertices and indices
   uint64_t meshBufferAddress;
   vk::raii::Buffer meshBuffer = nullptr;
@@ -32,6 +34,9 @@ class fe_BufferManager {
   uint64_t worldBufferAddress;
   vk::raii::Buffer worldBuffer = nullptr;
 
+  uint64_t particleBufferAddress;
+  vk::raii::Buffer particleBuffer = nullptr;
+
   vk::DeviceSize verticesSize;
   vk::DeviceSize indicesSize;
 
@@ -41,5 +46,6 @@ class fe_BufferManager {
   vk::raii::DeviceMemory meshBufferMemory = nullptr;
   vk::raii::DeviceMemory transformBufferMemory = nullptr;
   vk::raii::DeviceMemory worldBufferMemory = nullptr;
+  vk::raii::DeviceMemory particleBufferMemory = nullptr;
   size_t transformSize;
 };

@@ -8,13 +8,15 @@ struct fe_Vertex {
   alignas(16) glm::vec2 uv;
 };
 
+struct fe_Particle {
+  alignas(16) glm::vec3 pos;
+  alignas(16) glm::vec3 vel;
+};
+
 struct fe_PushConstants {
-  uint64_t vertBufAddress;
-  uint64_t transformBufAddress;
-  uint64_t worldBufAddress;
-  uint32_t transformIndex;
-  uint32_t vertexOffset;
-  uint32_t imageIndex;
+  uint64_t particleBufAddress;
+  float deltaTime;
+  uint32_t particleCount;
 };
 
 struct fe_Material {

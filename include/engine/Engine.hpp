@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
 #include "engine/Structs.hpp"
-
 class fe_Window;
 class fe_VulkanContext;
 class fe_TimingData;
@@ -41,7 +39,12 @@ class fe_Engine {
    */
   void configCommandBuffer();
 
-  // TODO: Move me
+  /**
+   * @brief Dispatches the shader that fills the particle buffer
+   */
+  void initParticles();
+
+  void startCompute();
 
   std::unique_ptr<fe_Window> win;
   std::unique_ptr<fe_VulkanContext> ctx;

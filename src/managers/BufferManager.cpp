@@ -2,10 +2,23 @@
 #include <cstdint>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <vulkan/vulkan.hpp>
+#include "Config.hpp"
 #include "engine/Structs.hpp"
 #include "engine/Timing.hpp"
 #include "engine/VulkanContext.hpp"
 #include "vulkan/vulkan.hpp"
+
+void fe_BufferManager::createParticleBuffer() {
+  ctx.createBuffer(sizeof(fe_Particle) * MAX_PARTICLES,
+                   vk::BufferUsageFlagBits::eStorageBuffer |
+                       vk::BufferUsageFlagBits::eShaderDeviceAddress |
+                       vk::BufferUsageFlagBits::eTransferDst,
+                   vk::MemoryPropertyFlagBits::eDeviceLocal,
+                   {.flags = vk::MemoryAllocateFlagBits::eDeviceAddress},
+                   particleBuffer, particleBufferMemory);
+  particleBufferAddress =
+      ctx.device.getBufferAddress({.buffer = particleBuffer});
+}
 
 void fe_BufferManager::createWorldBuffer() {
   ctx.createBuffer(sizeof(fe_WorldData),

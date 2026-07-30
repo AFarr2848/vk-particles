@@ -55,6 +55,8 @@ target_link_libraries(FeEngine
     assimp
 )
 
+
+
 set(SLANGC_EXECUTABLE slangc)
 
 set(SHADER_DIR ${CMAKE_SOURCE_DIR}/src/shaders)
@@ -64,6 +66,9 @@ file(MAKE_DIRECTORY ${SHADER_OUT_DIR})
 set(SHADER_SOURCES
     ${SHADER_DIR}/triangle.slang
     ${SHADER_DIR}/normals.slang
+    ${SHADER_DIR}/drawParticles.slang
+    ${SHADER_DIR}/compute/initParticles.slang
+    ${SHADER_DIR}/compute/particles.slang
 )
 
 set(SHADER_BINARIES "")
@@ -71,13 +76,35 @@ set(SHADER_BINARIES "")
 foreach(SHADER ${SHADER_SOURCES})
   get_filename_component(SHADER_NAME ${SHADER} NAME_WE)
 
-  set(VERT_OUTPUT ${SHADER_OUT_DIR}/${SHADER_NAME}_vert.spv)
-  set(FRAG_OUTPUT ${SHADER_OUT_DIR}/${SHADER_NAME}_frag.spv)
+  if(SHADER MATCHES "/compute/")
+    set(COMP_OUTPUT ${SHADER_OUT_DIR}/${SHADER_NAME}_comp.spv)
 
-  add_custom_command(
+    add_custom_command(
+        OUTPUT ${COMP_OUTPUT}
+        COMMAND ${SLANGC_EXECUTABLE} ${SHADER}
+                -entry computeMain
+                -g2
+                -stage compute
+                -target spirv
+                -profile spirv_1_4
+                -emit-spirv-directly
+                -fvk-use-entrypoint-name
+                -o ${COMP_OUTPUT}
+        DEPENDS ${SHADER}
+        COMMENT "Compiling Cmp ${SHADER_NAME}.slang → ${SHADER_NAME}_comp.spv"
+        VERBATIM
+    )
+
+    list(APPEND SHADER_BINARIES ${COMP_OUTPUT})
+  else()
+    set(VERT_OUTPUT ${SHADER_OUT_DIR}/${SHADER_NAME}_vert.spv)
+    set(FRAG_OUTPUT ${SHADER_OUT_DIR}/${SHADER_NAME}_frag.spv)
+
+    add_custom_command(
         OUTPUT ${VERT_OUTPUT}
         COMMAND ${SLANGC_EXECUTABLE} ${SHADER}
                 -entry vertexMain
+                -g2
                 -stage vertex
                 -target spirv
                 -profile spirv_1_4
@@ -89,10 +116,11 @@ foreach(SHADER ${SHADER_SOURCES})
         VERBATIM
     )
 
-  add_custom_command(
+    add_custom_command(
         OUTPUT ${FRAG_OUTPUT}
         COMMAND ${SLANGC_EXECUTABLE} ${SHADER}
                 -entry fragmentMain
+                -g2
                 -stage fragment
                 -target spirv
                 -profile spirv_1_4
@@ -104,7 +132,8 @@ foreach(SHADER ${SHADER_SOURCES})
         VERBATIM
     )
 
-  list(APPEND SHADER_BINARIES ${VERT_OUTPUT} ${FRAG_OUTPUT})
+    list(APPEND SHADER_BINARIES ${VERT_OUTPUT} ${FRAG_OUTPUT})
+  endif()
 endforeach()
 
 add_custom_target(compile_shaders ALL DEPENDS ${SHADER_BINARIES})
