@@ -11,15 +11,16 @@ void computeMain(uint3 dispatchThreadID: SV_DispatchThreadID) {
     return;
 
   Particle p = pc.particleBufferAddress[index];
+  float aspect = pc.worldDataBufferAddress.aspect;
 
   p.position.xyz += p.velocity.xyz * pc.deltaTime;
 
-  if (p.position.x >= 1.0) {
-    p.position.x = 1.0;
+  if (p.position.x >= aspect) {
+    p.position.x = aspect;
     p.velocity.x *= -1;
   }
-  if (p.position.x <= -1.0) {
-    p.position.x = -1.0;
+  if (p.position.x <= -aspect) {
+    p.position.x = -aspect;
     p.velocity.x *= -1;
   }
   if (p.position.y >= 1.0) {

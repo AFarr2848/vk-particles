@@ -77,7 +77,8 @@ fe_WorldData fe_World::getWorldData(fe_FrameContext frameContext) {
       //                    static_cast<float>(frameContext.screenWidth) /
       //                      static_cast<float>(frameContext.screenHeight),
       //                1000.0f, 0.1f),
-      .cameraPos = glm::vec3(0.0f)};
+      .cameraPos = glm::vec3(0.0f),
+      .aspect = aspect};
   worldData.proj[1][1] *= -1;
 
   return worldData;

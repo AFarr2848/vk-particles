@@ -46,6 +46,7 @@ struct fe_WorldData {
   glm::mat4 model;
   glm::mat4 proj;
   glm::vec3 cameraPos;
+  float aspect;
 };
 
 struct fe_FrameContext {

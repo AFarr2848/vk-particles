@@ -10,7 +10,7 @@ struct WorldData {
   float4x4 model;
   float4x4 proj;
   float3 cameraPos;
-  float _pad1;
+  float aspect;
 };
 
 struct PushConstants {
