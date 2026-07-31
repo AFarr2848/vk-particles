@@ -1,15 +1,4 @@
-struct Particle {
-  float3 position;
-  float _pad1;
-  float3 velocity;
-  float _pad2;
-};
-
-struct PushConstants {
-  Particle* particleBufferAddress;
-  float deltaTime;
-  uint particleCount;
-};
+#include "../include/Structs.slang"
 
 [[vk::push_constant]]
 PushConstants pc;

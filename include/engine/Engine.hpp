@@ -10,6 +10,8 @@ class fe_ShaderManager;
 class fe_World;
 class fe_InputHelper;
 class fe_TextureManager;
+class fe_Renderer;
+class fe_Computer;
 
 class fe_Engine {
  public:
@@ -25,27 +27,6 @@ class fe_Engine {
 
   fe_FrameContext frameContext;
 
-  /**
-   * @brief Handles timing, increments frame stuff, inits and submits the
-   * command buffer, and calls buffer updates and command records
-   */
-  void drawFrame();
-
-  void recordCommandBuffer(uint32_t imageIndex);
-
-  /**
-   * @brief Does all the BS to the command buffer that's required in absence of
-   * a pipeline
-   */
-  void configCommandBuffer();
-
-  /**
-   * @brief Dispatches the shader that fills the particle buffer
-   */
-  void initParticles();
-
-  void startCompute();
-
   std::unique_ptr<fe_Window> win;
   std::unique_ptr<fe_VulkanContext> ctx;
   std::unique_ptr<fe_Swapchain> swp;
@@ -55,4 +36,6 @@ class fe_Engine {
   std::unique_ptr<fe_TextureManager> texMan;
   std::unique_ptr<fe_World> world;
   std::unique_ptr<fe_InputHelper> inputHelper;
+  std::unique_ptr<fe_Renderer> renderer;
+  std::unique_ptr<fe_Computer> cmp;
 };

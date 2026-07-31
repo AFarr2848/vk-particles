@@ -43,7 +43,6 @@ void fe_BufferManager::updateWorldBuffer(fe_WorldData worldData) {
       .size = sizeof(fe_WorldData),
   });
 
-  // literally just copy it in because it's eHostVisible and eDeviceLocal
   memcpy(data, &worldData, sizeof(fe_WorldData));
 
   ctx.device.unmapMemory2({.memory = worldBufferMemory});
@@ -73,7 +72,6 @@ void fe_BufferManager::updateTransformBuffer(
       .size = transformSize,
   });
 
-  // literally just copy it in because it's eHostVisible and eDeviceLocal
   memcpy(data, transforms.data(), transformSize);
 
   ctx.device.unmapMemory2({.memory = transformBufferMemory});

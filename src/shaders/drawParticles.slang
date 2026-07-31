@@ -1,24 +1,7 @@
-struct Particle {
-  float3 position;
-  float _pad1;
-  float3 velocity;
-  float _pad2;
-};
-
-struct PushConstants {
-  Particle* particleBufferAddress;
-  float deltaTime;
-  uint particleCount;
-};
+#include "include/Structs.slang"
 
 [[vk::push_constant]]
 PushConstants pc;
-
-struct VSOutput {
-  float4 pos : SV_Position;
-  float4 color : COLOR;
-  float2 uv : TEXCOORD0;
-};
 
 static const float2 QUAD_OFFSETS[4] = { float2(-0.5, -0.5), float2(0.5, -0.5), float2(-0.5, 0.5),
                                         float2(0.5, 0.5) };
@@ -34,12 +17,8 @@ VSOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_InstanceID) 
 
   float2 cornerOffset = QUAD_OFFSETS[vertexID] * 0.01;
   output.uv = QUAD_UVS[vertexID];
-  output.color = float4(p.position, 1.0f);
-
-  float4 worldPos = float4(p.position, 1.0);
-  worldPos.xy += cornerOffset;
-  worldPos.z = 0;
-  output.pos = worldPos;
+  float3 worldPos = p.position + float3(cornerOffset, 0.0);
+  output.pos = mul(pc.worldDataBufferAddress.proj, float4(worldPos, 1.0));
   output.color = float4(p.velocity, 1.0);
   return output;
 }

@@ -19,6 +19,8 @@ add_executable(FeEngine
   src/World.cpp
   src/InputHelper.cpp
   src/Platonics.cpp
+  src/Computer.cpp
+  src/Renderer.cpp
 )
 
 find_package(Vulkan REQUIRED)
@@ -64,6 +66,7 @@ set(SHADER_OUT_DIR ${CMAKE_BINARY_DIR}/shaders)
 file(MAKE_DIRECTORY ${SHADER_OUT_DIR})
 
 set(SHADER_SOURCES
+
     ${SHADER_DIR}/triangle.slang
     ${SHADER_DIR}/normals.slang
     ${SHADER_DIR}/drawParticles.slang
@@ -83,6 +86,7 @@ foreach(SHADER ${SHADER_SOURCES})
         OUTPUT ${COMP_OUTPUT}
         COMMAND ${SLANGC_EXECUTABLE} ${SHADER}
                 -entry computeMain
+                -I ${SHADER_DIR}
                 -g2
                 -stage compute
                 -target spirv
@@ -104,6 +108,7 @@ foreach(SHADER ${SHADER_SOURCES})
         OUTPUT ${VERT_OUTPUT}
         COMMAND ${SLANGC_EXECUTABLE} ${SHADER}
                 -entry vertexMain
+                -I ${SHADER_DIR}
                 -g2
                 -stage vertex
                 -target spirv
@@ -120,6 +125,7 @@ foreach(SHADER ${SHADER_SOURCES})
         OUTPUT ${FRAG_OUTPUT}
         COMMAND ${SLANGC_EXECUTABLE} ${SHADER}
                 -entry fragmentMain
+                -I ${SHADER_DIR}
                 -g2
                 -stage fragment
                 -target spirv

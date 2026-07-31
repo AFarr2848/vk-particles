@@ -15,6 +15,7 @@ struct fe_Particle {
 
 struct fe_PushConstants {
   uint64_t particleBufAddress;
+  uint64_t worldBufAddress;
   float deltaTime;
   uint32_t particleCount;
 };

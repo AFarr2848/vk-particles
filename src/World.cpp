@@ -7,6 +7,7 @@
 //
 
 #include "engine/World.hpp"
+#include <glm/ext/matrix_clip_space.hpp>
 #include "engine/Camera.hpp"
 #include "engine/InputHelper.hpp"
 #include "engine/Shapes.hpp"
@@ -62,17 +63,21 @@ void fe_World::prepareDraw(std::vector<fe_Vertex>& vertices,
 }
 
 fe_WorldData fe_World::getWorldData(fe_FrameContext frameContext) {
-  fe_WorldData worldData = {
-      .view = camera.GetViewMatrix(),
-      .model = glm::mat4(1.0f),
-      .proj =
-          glm::perspectiveZO(glm::radians(45.0f),
-                             static_cast<float>(frameContext.screenWidth) /
-                                 static_cast<float>(frameContext.screenHeight),
-                             1000.0f, 0.1f),
-      .cameraPos = camera.Position
+  // TODO: Proper carmar
 
-  };
+  float aspect = static_cast<float>(frameContext.screenWidth) /
+                 static_cast<float>(frameContext.screenHeight);
+  fe_WorldData worldData = {
+      .view = glm::mat4(1.0f),
+      .model = glm::mat4(1.0f),
+      .proj = glm::orthoZO(-aspect, aspect, -1.0f, 1.0f, 1000.0f, 0.1f),
+
+      //.proj =
+      //   glm::perspectiveZO(glm::radians(45.0f),
+      //                    static_cast<float>(frameContext.screenWidth) /
+      //                      static_cast<float>(frameContext.screenHeight),
+      //                1000.0f, 0.1f),
+      .cameraPos = glm::vec3(0.0f)};
   worldData.proj[1][1] *= -1;
 
   return worldData;
