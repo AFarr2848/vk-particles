@@ -5,6 +5,33 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+
+set(IMGUI_SOURCES
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui_demo.cpp
+)
+
+set(IMGUI_BACKEND_SOURCES
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+)
+
+add_library(imgui STATIC ${IMGUI_SOURCES} ${IMGUI_BACKEND_SOURCES})
+
+target_include_directories(imgui PUBLIC
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+
+target_link_libraries(imgui
+    ${Vulkan_LIBRARIES}
+    ${GLFW_LIBRARIES}
+)
+
 
 add_executable(FeEngine
   src/main.cpp
@@ -21,6 +48,7 @@ add_executable(FeEngine
   src/Platonics.cpp
   src/Computer.cpp
   src/Renderer.cpp
+  src/GUI.cpp
 )
 
 find_package(Vulkan REQUIRED)
@@ -55,9 +83,8 @@ target_link_libraries(FeEngine
     ${Vulkan_LIBRARIES}
     ${GLFW_LIBRARIES}
     assimp
+    imgui
 )
-
-
 
 set(SLANGC_EXECUTABLE slangc)
 
@@ -70,6 +97,7 @@ set(SHADER_SOURCES
     ${SHADER_DIR}/triangle.slang
     ${SHADER_DIR}/normals.slang
     ${SHADER_DIR}/drawParticles.slang
+    ${SHADER_DIR}/drawDensity.slang
     ${SHADER_DIR}/compute/initParticles.slang
     ${SHADER_DIR}/compute/particles.slang
 )

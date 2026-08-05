@@ -12,6 +12,7 @@ class fe_World {
   fe_World(fe_InputHelper& inputHelper) : inputHelper(inputHelper) {}
 
   std::vector<glm::mat4> transforms;
+  fe_GUIValues guiValues;
 
   void init() { createShapes(); }
 

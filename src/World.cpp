@@ -1,15 +1,7 @@
-// This has to handle:
-//  - Uploading vertices and indices
-//  - Choosing textures
-//  - Input
-//  - Configuring drawing settings
-//  - Updating transforms
-//
 
 #include "engine/World.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
-#include "engine/Camera.hpp"
-#include "engine/InputHelper.hpp"
+#include "Config.hpp"
 #include "engine/Shapes.hpp"
 #include "engine/Structs.hpp"
 uint32_t fe_World::addShape(fe_Shape shape,
@@ -70,7 +62,7 @@ fe_WorldData fe_World::getWorldData(fe_FrameContext frameContext) {
   fe_WorldData worldData = {
       .view = glm::mat4(1.0f),
       .model = glm::mat4(1.0f),
-      .proj = glm::orthoZO(-aspect, aspect, -1.0f, 1.0f, 1000.0f, 0.1f),
+      .proj = glm::orthoZO(-aspect, aspect, -1.0f, 1.0f, 1000.0f, 0.0f),
 
       //.proj =
       //   glm::perspectiveZO(glm::radians(45.0f),
@@ -78,7 +70,12 @@ fe_WorldData fe_World::getWorldData(fe_FrameContext frameContext) {
       //                      static_cast<float>(frameContext.screenHeight),
       //                1000.0f, 0.1f),
       .cameraPos = glm::vec3(0.0f),
-      .aspect = aspect};
+      .aspect = aspect,
+      .particleSize = guiValues.particleSize,
+      .smoothRadius = guiValues.smoothRadius,
+      .densityDrawConst = guiValues.densityDrawConst
+
+  };
   worldData.proj[1][1] *= -1;
 
   return worldData;

@@ -3,8 +3,6 @@
 [[vk::push_constant]]
 PushConstants pc;
 
-static const float PI = 3.14159265359;
-
 uint hash(uint x) {
   x += (x << 10u);
   x ^= (x >> 6u);
@@ -14,16 +12,22 @@ uint hash(uint x) {
   return x;
 }
 
-float random01(uint seed) {
-  return float(hash(seed)) / 4294967295.0;
+float nextRandom(inout uint seed) {
+  seed = hash(seed);
+  return float(seed) / 4294967295.0;
 }
 
 void spawnParticle(uint index) {
   uint frameSeed = uint(pc.deltaTime * 1000.0);
 
-  float u1 = random01(index * 3u + 0u + frameSeed);
-  float u2 = random01(index * 3u + 1u + frameSeed);
-  float u3 = random01(index * 3u + 2u + frameSeed);
+  uint rngState = hash(index ^ frameSeed);
+
+  float u1 = nextRandom(rngState);
+  float u2 = nextRandom(rngState);
+  float u3 = nextRandom(rngState);
+  float u4 = nextRandom(rngState);
+  float u5 = nextRandom(rngState);
+  float u6 = nextRandom(rngState);
 
   Particle p = (Particle)0;
 
@@ -32,13 +36,17 @@ void spawnParticle(uint index) {
   float r = pow(u3, 1.0 / 3.0);
   float sinPhi = sin(phi);
 
-  float3 dir = float3(sinPhi * cos(theta), sinPhi * sin(theta), cos(phi));
+  float3 dir = float3(sinPhi * cos(theta), sinPhi * sin(theta), 0);
+
+  float velTheta = u4 * 2.0 * PI;
+  float velPhi = acos(2.0 * u5 - 1.0);
+  float3 velDir = float3(sin(velPhi) * cos(velTheta), sin(velPhi) * sin(velTheta), 0);
 
   float spawnRadius = 1.0;
   float speed = 0.5;
 
   p.position = dir * r * spawnRadius;
-  p.velocity = dir * speed;
+  p.velocity = velDir * speed;
 
   pc.particleBufferAddress[index] = p;
 }

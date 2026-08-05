@@ -47,6 +47,9 @@ struct fe_WorldData {
   glm::mat4 proj;
   glm::vec3 cameraPos;
   float aspect;
+  float particleSize;
+  float smoothRadius;
+  float densityDrawConst;
 };
 
 struct fe_FrameContext {
@@ -55,4 +58,11 @@ struct fe_FrameContext {
   uint64_t frameIndex;
   uint64_t screenWidth;
   uint64_t screenHeight;
+};
+
+struct fe_GUIValues {
+  float smoothRadius;
+  float particleSize;
+  float densityDrawConst;
+  int drawMode;
 };

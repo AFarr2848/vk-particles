@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 
-constexpr uint32_t WIDTH = 800;
-constexpr uint32_t HEIGHT = 600;
+constexpr uint32_t WIDTH = 1200;
+constexpr uint32_t HEIGHT = 800;
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 constexpr int MAX_LIGHTS = 64;
 constexpr int MAX_POINT_LIGHTS = 32;
@@ -10,7 +10,7 @@ constexpr int MAX_DIR_LIGHTS = 16;
 constexpr int MAX_SPOT_LIGHTS = 16;
 constexpr int MAX_TRANSFORMS = 1024;
 constexpr int MAX_TEXTURES = 1024;
-constexpr int MAX_PARTICLES = 10000024;
+constexpr int MAX_PARTICLES = 1000;
 
 #ifdef NDEBUG
 constexpr bool enableValidationLayers = false;

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Config.hpp"
 #include "engine/Computer.hpp"
+#include "engine/GUI.hpp"
 #include "engine/Structs.hpp"
 #include "engine/Swapchain.hpp"
 #include "engine/Timing.hpp"
@@ -9,6 +10,58 @@
 #include "engine/managers/BufferManager.hpp"
 #include "engine/managers/ShaderManager.hpp"
 #include "engine/managers/TextureManager.hpp"
+#include "vulkan/vulkan.hpp"
+
+void fe_Renderer::drawParticles() {
+  vk::CommandBuffer cmd = tim.getCurrentCmdBuffer();
+  cmd.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleStrip);
+
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eVertex,
+                     shaderMan.getShader("drawParticles_vert"));
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eFragment,
+                     shaderMan.getShader("drawParticles_frag"));
+
+  // push constants
+  fe_PushConstants pcData = {
+      .particleBufAddress = bufferMan.particleBufferAddress,
+      .worldBufAddress = bufferMan.worldBufferAddress,
+      .deltaTime = tim.deltaTime,
+      .particleCount = MAX_PARTICLES
+
+  };
+  cmd.pushConstants(ctx.pipelineLayout,
+                    vk::ShaderStageFlagBits::eVertex |
+                        vk::ShaderStageFlagBits::eFragment |
+                        vk::ShaderStageFlagBits::eCompute,
+                    0, sizeof(fe_PushConstants), &pcData);
+
+  cmd.draw(4, MAX_PARTICLES, 0, 0);
+}
+
+void fe_Renderer::drawDensity() {
+  vk::CommandBuffer cmd = tim.getCurrentCmdBuffer();
+  cmd.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleList);
+
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eVertex,
+                     shaderMan.getShader("drawDensity_vert"));
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eFragment,
+                     shaderMan.getShader("drawDensity_frag"));
+
+  // push constants
+  fe_PushConstants pcData = {
+      .particleBufAddress = bufferMan.particleBufferAddress,
+      .worldBufAddress = bufferMan.worldBufferAddress,
+      .deltaTime = tim.deltaTime,
+      .particleCount = MAX_PARTICLES
+
+  };
+  cmd.pushConstants(ctx.pipelineLayout,
+                    vk::ShaderStageFlagBits::eVertex |
+                        vk::ShaderStageFlagBits::eFragment |
+                        vk::ShaderStageFlagBits::eCompute,
+                    0, sizeof(fe_PushConstants), &pcData);
+  cmd.draw(3, 1, 0, 0);
+}
 
 void fe_Renderer::recordCommandBuffer(uint32_t imageIndex) {
   vk::CommandBuffer cmd = tim.getCurrentCmdBuffer();
@@ -78,29 +131,19 @@ void fe_Renderer::recordCommandBuffer(uint32_t imageIndex) {
 
   // cmd.bindDescriptorSets2(bindInfo);
 
-  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eVertex,
-                     shaderMan.getShader("drawParticles_vert"));
-  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eFragment,
-                     shaderMan.getShader("drawParticles_frag"));
-
   // misc. config
   configCommandBuffer();
 
-  // push constants
-  fe_PushConstants pcData = {
-      .particleBufAddress = bufferMan.particleBufferAddress,
-      .worldBufAddress = bufferMan.worldBufferAddress,
-      .deltaTime = tim.deltaTime,
-      .particleCount = MAX_PARTICLES
+  if (gui.getGUIData().drawMode == 0)
+    drawParticles();
+  else if (gui.getGUIData().drawMode == 1)
+    drawDensity();
+  else {
+    drawDensity();
+    drawParticles();
+  }
 
-  };
-  cmd.pushConstants(ctx.pipelineLayout,
-                    vk::ShaderStageFlagBits::eVertex |
-                        vk::ShaderStageFlagBits::eFragment |
-                        vk::ShaderStageFlagBits::eCompute,
-                    0, sizeof(fe_PushConstants), &pcData);
-
-  cmd.draw(4, MAX_PARTICLES, 0, 0);
+  gui.renderImgui(tim.getCurrentCmdBuffer());
 
   tim.getCurrentCmdBuffer().endRendering();
 
@@ -145,6 +188,7 @@ void fe_Renderer::drawFrame() {
 
     if (result == vk::Result::eSuboptimalKHR) {
       ctx.device.waitIdle();
+      gui.resizeGUI();
       swp.recreateSwapChain();
       return;
     }
@@ -217,7 +261,7 @@ void fe_Renderer::drawFrame() {
     ctx.device.waitIdle();
     swp.recreateSwapChain();
   } catch (const vk::SystemError& e) {
-    // Catch any other Vulkan errors that might occur
+    // Catch any other3Vulkan errors that might occur
     std::cerr << "Vulkan Error during present: " << e.what() << std::endl;
   }
 
@@ -241,7 +285,7 @@ void fe_Renderer::configCommandBuffer() {
   cmd.setScissorWithCountEXT(scissor);
 
   // 2. Input Assembly
-  cmd.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleStrip);
+  cmd.setPrimitiveTopologyEXT(vk::PrimitiveTopology::eTriangleList);
   cmd.setPrimitiveRestartEnableEXT(VK_FALSE);
 
   // 3. Rasterization State

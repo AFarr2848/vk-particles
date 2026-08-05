@@ -1,4 +1,5 @@
 #pragma once
+#include "engine/Structs.hpp"
 class fe_BufferManager;
 class fe_ShaderManager;
 class fe_Swapchain;
@@ -6,6 +7,7 @@ class fe_VulkanContext;
 class fe_TimingData;
 class fe_TextureManager;
 class fe_Computer;
+class fe_GUI;
 
 class fe_Renderer {
  public:
@@ -15,14 +17,17 @@ class fe_Renderer {
               fe_Computer& cmp,
               fe_BufferManager& bufferMan,
               fe_ShaderManager& shaderMan,
-              fe_TextureManager& texMan)
+              fe_TextureManager& texMan,
+              fe_GUI& gui)
       : ctx(ctx),
         swp(swp),
         tim(tim),
         cmp(cmp),
         bufferMan(bufferMan),
         shaderMan(shaderMan),
-        texMan(texMan) {};
+        texMan(texMan),
+        gui(gui) {};
+
   /**
    * @brief Handles timing, increments frame stuff, inits and submits the
    * command buffer, and calls buffer updates and command records
@@ -45,4 +50,8 @@ class fe_Renderer {
   fe_Swapchain& swp;
   fe_VulkanContext& ctx;
   fe_TimingData& tim;
+  fe_GUI& gui;
+
+  void drawParticles();
+  void drawDensity();
 };

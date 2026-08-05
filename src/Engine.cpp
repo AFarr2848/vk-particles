@@ -5,8 +5,8 @@
 #include <memory>
 #include <vulkan/vulkan_hpp_macros.hpp>
 #include <vulkan/vulkan_raii.hpp>
-#include "Config.hpp"
 #include "engine/Computer.hpp"
+#include "engine/GUI.hpp"
 #include "engine/Renderer.hpp"
 #include "engine/Structs.hpp"
 #include "engine/Swapchain.hpp"
@@ -33,14 +33,16 @@ void fe_Engine::startEngine() {
   texMan = std::make_unique<fe_TextureManager>(*ctx, *tim);
   world = std::make_unique<fe_World>(*inputHelper);
   cmp = std::make_unique<fe_Computer>(*ctx, *tim, *bufferMan, *shaderMan);
+  gui = std::make_unique<fe_GUI>(*ctx, *win, *swp);
   renderer = std::make_unique<fe_Renderer>(*ctx, *swp, *tim, *cmp, *bufferMan,
-                                           *shaderMan, *texMan);
+                                           *shaderMan, *texMan, *gui);
 
   win->init();
   ctx->init();
   swp->init();
   tim->init();
   world->init();
+  gui->init();
 
   texMan->loadTextures();
   // texMan->addTextureFromColor(glm::vec3(1.0f, 0.0f, 1.0f), "pink");
@@ -59,6 +61,13 @@ void fe_Engine::startEngine() {
       vk::ShaderStageFlagBits::eFragment, texMan->texSetLayout);
   shaderMan->loadShaderModule(
       "drawParticles_vert", "build/shaders/drawParticles_vert.spv",
+      vk::ShaderStageFlagBits::eVertex, texMan->texSetLayout);
+
+  shaderMan->loadShaderModule(
+      "drawDensity_frag", "build/shaders/drawDensity_frag.spv",
+      vk::ShaderStageFlagBits::eFragment, texMan->texSetLayout);
+  shaderMan->loadShaderModule(
+      "drawDensity_vert", "build/shaders/drawDensity_vert.spv",
       vk::ShaderStageFlagBits::eVertex, texMan->texSetLayout);
 
   std::vector<fe_Vertex> vertices = {};
@@ -94,6 +103,7 @@ void fe_Engine::run() {
 
     inputHelper->updateInputs();
     world->processInput(frameContext);
+    world->guiValues = gui->getGUIData();
     // world->transformShapes();
     fe_WorldData worldData = world->getWorldData(frameContext);
 
@@ -102,4 +112,5 @@ void fe_Engine::run() {
     renderer->drawFrame();
   }
   ctx->device.waitIdle();
+  gui->cleanup();
 }
