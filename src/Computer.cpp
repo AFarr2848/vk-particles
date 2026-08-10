@@ -23,6 +23,31 @@ void fe_Computer::startCompute() {
                     0, sizeof(pc), &pc);
 
   cmd.bindShadersEXT(vk::ShaderStageFlagBits::eCompute,
+                     shaderMan.getShader("calculateDensities_comp"));
+  cmd.dispatch(groupCountX, 1, 1);
+
+  vk::BufferMemoryBarrier2 densityBarrier{
+      .srcStageMask = vk::PipelineStageFlagBits2::eComputeShader,
+      .srcAccessMask = vk::AccessFlagBits2::eShaderWrite,
+
+      .dstStageMask = vk::PipelineStageFlagBits2::eComputeShader,
+      .dstAccessMask = vk::AccessFlagBits2::eShaderRead,
+
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+
+      .buffer = bufferMan.particleBuffer,
+      .offset = 0,
+      .size = vk::WholeSize
+
+  };
+
+  vk::DependencyInfo densityDependencyInfo{
+      .bufferMemoryBarrierCount = 1, .pBufferMemoryBarriers = &densityBarrier};
+
+  cmd.pipelineBarrier2(densityDependencyInfo);
+
+  cmd.bindShadersEXT(vk::ShaderStageFlagBits::eCompute,
                      shaderMan.getShader("particles_comp"));
 
   cmd.dispatch(groupCountX, 1, 1);

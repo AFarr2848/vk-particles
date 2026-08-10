@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
-#include <iostream>
 #include <vulkan/vulkan_raii.hpp>
 #include "Config.hpp"
 #include "engine/Swapchain.hpp"
@@ -96,12 +95,4 @@ void fe_TimingData::incrementTiming() {
   currentTime = glfwGetTime();
   deltaTime = currentTime - lastTime;
   fpsCount += 1;
-
-  timeSinceFPS += deltaTime;
-
-  if (timeSinceFPS >= 1) {
-    std::cout << "FPS: " << fpsCount << std::endl;
-    timeSinceFPS = 0;
-    fpsCount = 0;
-  }
 }

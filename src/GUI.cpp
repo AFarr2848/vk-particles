@@ -41,9 +41,15 @@ void fe_GUI::startImgui() {
   };
   ImGui_ImplVulkan_Init(&initInfo);
   ImGui_ImplGlfw_InitForVulkan(win.window, true);
+
   guiValues.particleSize = 0.02;
-  guiValues.smoothRadius = 0.25;
-  guiValues.densityDrawConst = 0.003;
+  guiValues.smoothRadius = 0.05;
+  guiValues.densityDrawConst = 0.15;
+  guiValues.targetDensity = 0.001;
+  guiValues.pressureMultiplier = 0.05;
+  guiValues.gravity = 0.00;
+  guiValues.collisionDampingConst = 0.95;
+  guiValues.drag = 0.999;
 }
 
 void fe_GUI::renderImgui(vk::raii::CommandBuffer& cmd) {
@@ -100,13 +106,18 @@ void fe_GUI::drawRightSidePanel() {
   ImGui::SameLine();
   ImGui::RadioButton("Both", &guiValues.drawMode, 3);
 
-  ImGui::SeparatorText("Render Values");
+  ImGui::SeparatorText("Physics Values");
+  ImGui::DragFloat("smoothRadius", &guiValues.smoothRadius, 0.001, 0.001, 1);
+  ImGui::DragFloat("targetDensity", &guiValues.targetDensity, 0.01);
+  ImGui::DragFloat("pressureMultiplier", &guiValues.pressureMultiplier, 0.001);
+  ImGui::DragFloat("gravity", &guiValues.gravity, 0.001);
+  ImGui::DragFloat("collisionDampingConst", &guiValues.collisionDampingConst,
+                   0.01, 0, 1);
+  ImGui::DragFloat("drag", &guiValues.drag, 0.001, 0, 1);
 
-  ImGui::SliderFloat("SmoothRadius", &guiValues.smoothRadius, 0, 0.5);
-  ImGui::SliderFloat("particleSize", &guiValues.particleSize, 0, 0.5);
-  ImGui::SliderFloat("densityConst`", &guiValues.densityDrawConst, 0, 0.03);
-
-  ImGui::Separator();
+  ImGui::SeparatorText("Draw Values");
+  ImGui::DragFloat("densityDrawConst", &guiValues.densityDrawConst, 0.0001);
+  ImGui::DragFloat("particleSize", &guiValues.particleSize, 0.001, 0, 0.5);
 
   ImGui::End();
 }

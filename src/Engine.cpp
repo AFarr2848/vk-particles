@@ -55,6 +55,9 @@ void fe_Engine::startEngine() {
   shaderMan->loadShaderModule(
       "particles_comp", "build/shaders/particles_comp.spv",
       vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
+  shaderMan->loadShaderModule(
+      "calculateDensities_comp", "build/shaders/calculateDensities_comp.spv",
+      vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
 
   shaderMan->loadShaderModule(
       "drawParticles_frag", "build/shaders/drawParticles_frag.spv",

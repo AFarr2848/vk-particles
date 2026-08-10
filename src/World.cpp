@@ -59,6 +59,7 @@ fe_WorldData fe_World::getWorldData(fe_FrameContext frameContext) {
 
   float aspect = static_cast<float>(frameContext.screenWidth) /
                  static_cast<float>(frameContext.screenHeight);
+
   fe_WorldData worldData = {
       .view = glm::mat4(1.0f),
       .model = glm::mat4(1.0f),
@@ -73,7 +74,12 @@ fe_WorldData fe_World::getWorldData(fe_FrameContext frameContext) {
       .aspect = aspect,
       .particleSize = guiValues.particleSize,
       .smoothRadius = guiValues.smoothRadius,
-      .densityDrawConst = guiValues.densityDrawConst
+      .densityDrawConst = guiValues.densityDrawConst,
+      .targetDensity = guiValues.targetDensity,
+      .pressureMultiplier = guiValues.pressureMultiplier,
+      .gravity = guiValues.gravity,
+      .collisionDampingConst = guiValues.collisionDampingConst,
+      .drag = guiValues.drag
 
   };
   worldData.proj[1][1] *= -1;

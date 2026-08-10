@@ -100,6 +100,7 @@ set(SHADER_SOURCES
     ${SHADER_DIR}/drawDensity.slang
     ${SHADER_DIR}/compute/initParticles.slang
     ${SHADER_DIR}/compute/particles.slang
+    ${SHADER_DIR}/compute/calculateDensities.slang
 )
 
 set(SHADER_BINARIES "")

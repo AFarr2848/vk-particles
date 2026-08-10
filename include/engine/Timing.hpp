@@ -23,7 +23,6 @@ class fe_TimingData {
   float currentTime;
   float lastTime = -1;
   float deltaTime = 0;
-  float timeSinceFPS = 0;
   int fpsCount = 0;
 
   // Bc the number of semaphores are based on the swapchain image count, which

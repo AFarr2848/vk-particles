@@ -9,13 +9,52 @@
 [[vk::push_constant]]
 PushConstants pc;
 
-void moveParticle(Particle* p) {
+float smoothingKernelDerivative(float dist) {
+  float radius = pc.worldDataBufferAddress.smoothRadius;
+  if (dist >= radius)
+    return 0;
+  float scale = 12 / (pow(radius, 4) * PI);
+  return (dist - radius) * scale;
+}
+
+float densityToPressure(float density) {
+  float densityError = density - pc.worldDataBufferAddress.targetDensity;
+  float pressure = densityError * pc.worldDataBufferAddress.pressureMultiplier;
+  return pressure;
+}
+
+float calculateSharedPressure(float d1, float d2) {
+  float p1 = densityToPressure(d1);
+  float p2 = densityToPressure(d2);
+  return (p1 + p2) / 2;
+}
+
+float3 calculatePressureForce(int particleIndex) {
+  float3 pressureForce = float3(0);
+
+  for (int i = 0; i < pc.particleCount; i++) {
+    Particle* thisParticle = pc.particleBufferAddress + particleIndex;
+    Particle* otherParticle = pc.particleBufferAddress + i;
+    if (i == particleIndex)
+      continue;
+    float3 offset = thisParticle.position - otherParticle.position;
+    float dist = length(offset);
+    float3 dir = dist == 0 ? float3(1.0, 1.0, 0.0) : offset / dist;
+    float slope = smoothingKernelDerivative(dist);
+    float sharedPressure = calculateSharedPressure(thisParticle.density, otherParticle.density);
+    pressureForce += sharedPressure * dir * slope * mass / thisParticle.density;
+  }
+  return pressureForce;
+}
+
+void moveParticle(int particleIndex) {
   float aspect = pc.worldDataBufferAddress.aspect;
+  Particle* p = pc.particleBufferAddress + particleIndex;
+  p.velocity.y -= pc.worldDataBufferAddress.gravity * pc.deltaTime;
 
   p.position.xyz += p.velocity.xyz * pc.deltaTime;
-  // p.velocity.y -= 0.001f;
-  // p.velocity *= 0.9999;
-  
+
+  p.velocity *= exp(-pc.worldDataBufferAddress.drag * pc.deltaTime);
 
   if (p.position.x >= aspect) {
     p.position.x = aspect;
@@ -35,22 +74,13 @@ void moveParticle(Particle* p) {
   }
 }
 
-float smoothingKernel(float dist) {
-  const float smoothRadius = pc.worldDataBufferAddress.smoothRadius;
-  float volume = float.getPi() * pow(smoothRadius, 8) / 4;
-  float value = max(0, smoothRadius * smoothRadius - dist * dist);
-  return value * value * value / volume;
-}
+void applyPressureForce(int particleIndex) {
+  float aspect = pc.worldDataBufferAddress.aspect;
+  Particle* p = pc.particleBufferAddress + particleIndex;
 
-float calculateDensity(float3 p) {
-  float density = 0;
-  float mass = 1;
-  for (int i = 0; i < pc.particleCount; i++) {
-    float dist = length(pc.particleBufferAddress.position - p);
-    float influence = smoothingKernel(dist);
-    density += mass * influence;
-  }
-  return density;
+  float3 pressureForce = calculatePressureForce(particleIndex);
+  float3 pressureAccel = pressureForce / p.density;
+  p.velocity -= pressureAccel * pc.deltaTime * pc.worldDataBufferAddress.collisionDampingConst;
 }
 
 [numthreads(256, 1, 1)]
@@ -60,5 +90,6 @@ void computeMain(uint3 dispatchThreadID: SV_DispatchThreadID) {
     return;
   Particle* p = pc.particleBufferAddress + index;
 
-  moveParticle(p);
+  applyPressureForce(index);
+  moveParticle(index);
 }

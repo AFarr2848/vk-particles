@@ -46,7 +46,7 @@ void spawnParticle(uint index) {
   float speed = 0.5;
 
   p.position = dir * r * spawnRadius;
-  p.velocity = velDir * speed;
+  p.velocity = float3(0);
 
   pc.particleBufferAddress[index] = p;
 }

@@ -1,6 +1,6 @@
 struct Particle {
   float3 position;
-  float value1;
+  float density;
   float3 velocity;
   float value2;
 };
@@ -15,6 +15,11 @@ struct WorldData {
   float particleSize;
   float smoothRadius;
   float densityDrawConst;
+  float targetDensity;
+  float pressureMultiplier;
+  float gravity;
+  float collisionDampingConst;
+  float drag;
 };
 
 struct PushConstants {
@@ -31,3 +36,6 @@ struct VSOutput {
 };
 
 static const float PI = 3.14159265f;
+static const float E = 2.71828182f;
+
+static const float mass = 1;

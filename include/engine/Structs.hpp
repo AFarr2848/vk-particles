@@ -50,6 +50,11 @@ struct fe_WorldData {
   float particleSize;
   float smoothRadius;
   float densityDrawConst;
+  float targetDensity;
+  float pressureMultiplier;
+  float gravity;
+  float collisionDampingConst;
+  float drag;
 };
 
 struct fe_FrameContext {
@@ -64,5 +69,10 @@ struct fe_GUIValues {
   float smoothRadius;
   float particleSize;
   float densityDrawConst;
+  float targetDensity;
+  float pressureMultiplier;
   int drawMode;
+  float gravity;
+  float collisionDampingConst;
+  float drag;
 };

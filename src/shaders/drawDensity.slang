@@ -36,12 +36,12 @@ float4 fragmentMain(VSOutput input) : SV_Target {
   float aspect = pc.worldDataBufferAddress.aspect;
   float3 worldPos = float3((input.uv.x * 2.0 - 1.0) * aspect, -(input.uv.y * 2.0 - 1.0), 0.0);
   float density = calculateDensity(worldPos);
+  float3 color;
+  float targetDensity = pc.worldDataBufferAddress.targetDensity;
+  float distFromTarget = density / targetDensity;
 
-  float visualDensity =
-      density *
-      pc.worldDataBufferAddress
-          .densityDrawConst;  // Tweak this value until it looks smooth!
-                              // 
-                              // 
-  return float4(float3(visualDensity), 1.0f);
+  color = float3(density, 0, 0);
+
+  color = color * pc.worldDataBufferAddress.densityDrawConst;
+  return float4(color, 1.0f);
 }
