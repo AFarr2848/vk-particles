@@ -24,7 +24,7 @@ float calculateDensity(float3 p) {
   float density = 0;
   float mass = 1;
   for (int i = 0; i < pc.particleCount; i++) {
-    float dist = length(pc.particleBufferAddress[i].position - p);
+    float dist = length(pc.worldDataBufferAddress.particleBufferAddress[i].position - p);
     float influence = smoothingKernel(dist);
     density += mass * influence;
   }

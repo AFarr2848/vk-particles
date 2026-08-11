@@ -54,3 +54,10 @@
     - Semaphores and timelines and such
 
 
+
+
+SORTING BUFFER THINGS:
+
+1. Set particle position hashes
+2. Sort particle buffer
+3. Set lookup table

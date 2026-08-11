@@ -20,6 +20,9 @@ class fe_Computer {
   void startCompute();
 
  private:
+  void placeParticleBarrier();
+  void sortParticles();
+
   fe_VulkanContext& ctx;
   fe_TimingData& tim;
   fe_BufferManager& bufferMan;

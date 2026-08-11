@@ -84,6 +84,7 @@ target_link_libraries(FeEngine
     ${GLFW_LIBRARIES}
     assimp
     imgui
+
 )
 
 set(SLANGC_EXECUTABLE slangc)
@@ -101,6 +102,9 @@ set(SHADER_SOURCES
     ${SHADER_DIR}/compute/initParticles.slang
     ${SHADER_DIR}/compute/particles.slang
     ${SHADER_DIR}/compute/calculateDensities.slang
+    ${SHADER_DIR}/compute/bitonicSort.slang
+    ${SHADER_DIR}/compute/setParticlePositionHashes.slang
+    ${SHADER_DIR}/compute/fillParticleLookupTable.slang
 )
 
 set(SHADER_BINARIES "")

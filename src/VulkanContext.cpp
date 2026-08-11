@@ -208,6 +208,10 @@ void fe_VulkanContext::pickPhysicalDevice() {
     bool supportsVulkan1_3 =
         device.getProperties().apiVersion >= VK_API_VERSION_1_3;
 
+    bool supportsPushConstantSize =
+        device.getProperties().limits.maxPushConstantsSize >=
+        sizeof(fe_PushConstants);
+
     // Check if any of the queue families support graphics operations
     auto queueFamilies = device.getQueueFamilyProperties();
     bool supportsGraphics =
@@ -247,7 +251,8 @@ void fe_VulkanContext::pickPhysicalDevice() {
             .dynamicRendering;
 
     return supportsVulkan1_3 && supportsGraphics &&
-           supportsAllRequiredExtensions && supportsRequiredFeatures;
+           supportsAllRequiredExtensions && supportsRequiredFeatures &&
+           supportsPushConstantSize;
   });
   if (devIter != devices.end()) {
     physicalDevice = *devIter;

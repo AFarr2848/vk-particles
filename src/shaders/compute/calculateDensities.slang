@@ -15,9 +15,9 @@ float smoothingKernel(float dist) {
 float calculateDensity(float3 p) {
   float density = 0;
   for (int i = 0; i < pc.particleCount; i++) {
-    float dist = length(pc.particleBufferAddress[i].position - p);
+    float dist = length(pc.worldDataBufferAddress.particleBufferAddress[i].position - p);
     float influence = smoothingKernel(dist);
-    density += mass * influence;
+    density += pc.worldDataBufferAddress.mass * influence;
   }
   return density;
 }
@@ -27,6 +27,6 @@ void computeMain(uint3 dispatchThreadID: SV_DispatchThreadID) {
   uint index = dispatchThreadID.x;
   if (index >= pc.particleCount)
     return;
-  Particle* p = pc.particleBufferAddress + index;
+  Particle* p = pc.worldDataBufferAddress.particleBufferAddress + index;
   p.density = calculateDensity(p.position);
 }

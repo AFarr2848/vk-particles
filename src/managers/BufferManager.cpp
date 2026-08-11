@@ -20,6 +20,17 @@ void fe_BufferManager::createParticleBuffer() {
       ctx.device.getBufferAddress({.buffer = particleBuffer});
 }
 
+void fe_BufferManager::createParticleLookupBuffer() {
+  ctx.createBuffer(sizeof(uint32_t) * (MAX_PARTICLES << 1),
+                   vk::BufferUsageFlagBits::eStorageBuffer |
+                       vk::BufferUsageFlagBits::eShaderDeviceAddress |
+                       vk::BufferUsageFlagBits::eTransferDst,
+                   vk::MemoryPropertyFlagBits::eDeviceLocal,
+                   {.flags = vk::MemoryAllocateFlagBits::eDeviceAddress},
+                   lookupBuffer, lookupBufferMemory);
+  lookupBufferAddress = ctx.device.getBufferAddress({.buffer = lookupBuffer});
+}
+
 void fe_BufferManager::createWorldBuffer() {
   ctx.createBuffer(sizeof(fe_WorldData),
                    vk::BufferUsageFlagBits::eStorageBuffer |

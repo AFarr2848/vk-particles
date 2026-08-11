@@ -14,10 +14,11 @@ struct fe_Particle {
 };
 
 struct fe_PushConstants {
-  uint64_t particleBufAddress;
   uint64_t worldBufAddress;
   float deltaTime;
   uint32_t particleCount;
+  uint32_t data1;
+  uint32_t data2;
 };
 
 struct fe_Material {
@@ -46,6 +47,11 @@ struct fe_WorldData {
   glm::mat4 model;
   glm::mat4 proj;
   glm::vec3 cameraPos;
+
+  uint64_t particleBufAddress;
+  uint64_t lookupBufAddress;
+
+  glm::vec3 particleWorldSize;
   float aspect;
   float particleSize;
   float smoothRadius;
@@ -55,6 +61,7 @@ struct fe_WorldData {
   float gravity;
   float collisionDampingConst;
   float drag;
+  float mass;
 };
 
 struct fe_FrameContext {
@@ -66,13 +73,12 @@ struct fe_FrameContext {
 };
 
 struct fe_GUIValues {
-  float smoothRadius;
   float particleSize;
   float densityDrawConst;
-  float targetDensity;
   float pressureMultiplier;
   int drawMode;
   float gravity;
   float collisionDampingConst;
   float drag;
+  float particleSpacing;
 };

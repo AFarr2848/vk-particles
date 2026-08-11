@@ -22,11 +22,9 @@ void fe_Renderer::drawParticles() {
                      shaderMan.getShader("drawParticles_frag"));
 
   // push constants
-  fe_PushConstants pcData = {
-      .particleBufAddress = bufferMan.particleBufferAddress,
-      .worldBufAddress = bufferMan.worldBufferAddress,
-      .deltaTime = tim.deltaTime,
-      .particleCount = MAX_PARTICLES
+  fe_PushConstants pcData = {.worldBufAddress = bufferMan.worldBufferAddress,
+                             .deltaTime = tim.deltaTime,
+                             .particleCount = MAX_PARTICLES
 
   };
   cmd.pushConstants(ctx.pipelineLayout,
@@ -48,11 +46,9 @@ void fe_Renderer::drawDensity() {
                      shaderMan.getShader("drawDensity_frag"));
 
   // push constants
-  fe_PushConstants pcData = {
-      .particleBufAddress = bufferMan.particleBufferAddress,
-      .worldBufAddress = bufferMan.worldBufferAddress,
-      .deltaTime = tim.deltaTime,
-      .particleCount = MAX_PARTICLES
+  fe_PushConstants pcData = {.worldBufAddress = bufferMan.worldBufferAddress,
+                             .deltaTime = tim.deltaTime,
+                             .particleCount = MAX_PARTICLES
 
   };
   cmd.pushConstants(ctx.pipelineLayout,

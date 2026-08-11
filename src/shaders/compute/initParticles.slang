@@ -48,7 +48,7 @@ void spawnParticle(uint index) {
   p.position = dir * r * spawnRadius;
   p.velocity = float3(0);
 
-  pc.particleBufferAddress[index] = p;
+  pc.worldDataBufferAddress.particleBufferAddress[index] = p;
 }
 
 [numthreads(256, 1, 1)]

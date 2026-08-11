@@ -24,6 +24,7 @@ class fe_Engine {
   void run();
 
  private:
+  void updateWorldData();
   std::vector<fe_DrawInfo> drawInfos = {};
 
   fe_FrameContext frameContext;

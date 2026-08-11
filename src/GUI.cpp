@@ -1,4 +1,5 @@
 #include "engine/GUI.hpp"
+#include "Config.hpp"
 #include "engine/Structs.hpp"
 #include "engine/Swapchain.hpp"
 #include "engine/VulkanContext.hpp"
@@ -42,13 +43,12 @@ void fe_GUI::startImgui() {
   ImGui_ImplVulkan_Init(&initInfo);
   ImGui_ImplGlfw_InitForVulkan(win.window, true);
 
-  guiValues.particleSize = 0.02;
-  guiValues.smoothRadius = 0.05;
+  guiValues.particleSize = 0.005;
   guiValues.densityDrawConst = 0.15;
-  guiValues.targetDensity = 0.001;
   guiValues.pressureMultiplier = 0.05;
   guiValues.gravity = 0.00;
   guiValues.collisionDampingConst = 0.95;
+  guiValues.particleSpacing = 0.001;
   guiValues.drag = 0.999;
 }
 
@@ -98,6 +98,7 @@ void fe_GUI::drawRightSidePanel() {
   ImGui::Begin("Inspector", nullptr, flags);
   ImGui::Text(" %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
               io.Framerate);
+  ImGui::Text("%d particles", MAX_PARTICLES);
 
   ImGui::SeparatorText("Draw Modes");
   ImGui::RadioButton("Particles", &guiValues.drawMode, 0);
@@ -107,8 +108,8 @@ void fe_GUI::drawRightSidePanel() {
   ImGui::RadioButton("Both", &guiValues.drawMode, 3);
 
   ImGui::SeparatorText("Physics Values");
-  ImGui::DragFloat("smoothRadius", &guiValues.smoothRadius, 0.001, 0.001, 1);
-  ImGui::DragFloat("targetDensity", &guiValues.targetDensity, 0.01);
+  ImGui::DragFloat("particleSpacing", &guiValues.particleSpacing, 0.0001,
+                   0.000001);
   ImGui::DragFloat("pressureMultiplier", &guiValues.pressureMultiplier, 0.001);
   ImGui::DragFloat("gravity", &guiValues.gravity, 0.001);
   ImGui::DragFloat("collisionDampingConst", &guiValues.collisionDampingConst,

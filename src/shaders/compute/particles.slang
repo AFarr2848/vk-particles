@@ -33,8 +33,8 @@ float3 calculatePressureForce(int particleIndex) {
   float3 pressureForce = float3(0);
 
   for (int i = 0; i < pc.particleCount; i++) {
-    Particle* thisParticle = pc.particleBufferAddress + particleIndex;
-    Particle* otherParticle = pc.particleBufferAddress + i;
+    Particle* thisParticle = pc.worldDataBufferAddress.particleBufferAddress + particleIndex;
+    Particle* otherParticle = pc.worldDataBufferAddress.particleBufferAddress + i;
     if (i == particleIndex)
       continue;
     float3 offset = thisParticle.position - otherParticle.position;
@@ -42,14 +42,15 @@ float3 calculatePressureForce(int particleIndex) {
     float3 dir = dist == 0 ? float3(1.0, 1.0, 0.0) : offset / dist;
     float slope = smoothingKernelDerivative(dist);
     float sharedPressure = calculateSharedPressure(thisParticle.density, otherParticle.density);
-    pressureForce += sharedPressure * dir * slope * mass / thisParticle.density;
+    pressureForce +=
+        sharedPressure * dir * slope * pc.worldDataBufferAddress.mass / thisParticle.density;
   }
   return pressureForce;
 }
 
 void moveParticle(int particleIndex) {
   float aspect = pc.worldDataBufferAddress.aspect;
-  Particle* p = pc.particleBufferAddress + particleIndex;
+  Particle* p = pc.worldDataBufferAddress.particleBufferAddress + particleIndex;
   p.velocity.y -= pc.worldDataBufferAddress.gravity * pc.deltaTime;
 
   p.position.xyz += p.velocity.xyz * pc.deltaTime;
@@ -76,7 +77,7 @@ void moveParticle(int particleIndex) {
 
 void applyPressureForce(int particleIndex) {
   float aspect = pc.worldDataBufferAddress.aspect;
-  Particle* p = pc.particleBufferAddress + particleIndex;
+  Particle* p = pc.worldDataBufferAddress.particleBufferAddress + particleIndex;
 
   float3 pressureForce = calculatePressureForce(particleIndex);
   float3 pressureAccel = pressureForce / p.density;
@@ -88,7 +89,7 @@ void computeMain(uint3 dispatchThreadID: SV_DispatchThreadID) {
   uint index = dispatchThreadID.x;
   if (index >= pc.particleCount)
     return;
-  Particle* p = pc.particleBufferAddress + index;
+  Particle* p = pc.worldDataBufferAddress.particleBufferAddress + index;
 
   applyPressureForce(index);
   moveParticle(index);

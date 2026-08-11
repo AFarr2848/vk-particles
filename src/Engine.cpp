@@ -1,10 +1,12 @@
 #include "engine/Engine.hpp"
 #include <GLFW/glfw3.h>
+#include <cassert>
 #include <cstdint>
 #include <iostream>
 #include <memory>
 #include <vulkan/vulkan_hpp_macros.hpp>
 #include <vulkan/vulkan_raii.hpp>
+#include "Config.hpp"
 #include "engine/Computer.hpp"
 #include "engine/GUI.hpp"
 #include "engine/Renderer.hpp"
@@ -23,6 +25,7 @@ fe_Engine::~fe_Engine() = default;
 fe_Engine::fe_Engine() = default;
 
 void fe_Engine::startEngine() {
+  assert(std::pow(2, int(log2(MAX_PARTICLES))) == MAX_PARTICLES);
   inputHelper = std::make_unique<fe_InputHelper>();
   win = std::make_unique<fe_Window>(*inputHelper);
   ctx = std::make_unique<fe_VulkanContext>(*win);
@@ -52,6 +55,17 @@ void fe_Engine::startEngine() {
   shaderMan->loadShaderModule(
       "initParticles_comp", "build/shaders/initParticles_comp.spv",
       vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
+  shaderMan->loadShaderModule(
+      "bitonicSort_comp", "build/shaders/bitonicSort_comp.spv",
+      vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
+  shaderMan->loadShaderModule(
+      "setParticlePositionHashes_comp",
+      "build/shaders/setParticlePositionHashes_comp.spv",
+      vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
+  shaderMan->loadShaderModule("fillParticleLookupTable_comp",
+                              "build/shaders/fillParticleLookupTable_comp.spv",
+                              vk::ShaderStageFlagBits::eCompute,
+                              texMan->texSetLayout);
   shaderMan->loadShaderModule(
       "particles_comp", "build/shaders/particles_comp.spv",
       vk::ShaderStageFlagBits::eCompute, texMan->texSetLayout);
@@ -85,9 +99,11 @@ void fe_Engine::startEngine() {
   //                                 world->transforms.size());
   bufferMan->createWorldBuffer();
   bufferMan->createParticleBuffer();
+  bufferMan->createParticleLookupBuffer();
 
   ctx->createPipelineLayout();
 
+  updateWorldData();
   cmp->initParticles();
 }
 
@@ -108,12 +124,17 @@ void fe_Engine::run() {
     world->processInput(frameContext);
     world->guiValues = gui->getGUIData();
     // world->transformShapes();
-    fe_WorldData worldData = world->getWorldData(frameContext);
-
-    // bufferMan->updateTransformBuffer(world->transforms);
-    bufferMan->updateWorldBuffer(worldData);
+    updateWorldData();
     renderer->drawFrame();
   }
   ctx->device.waitIdle();
   gui->cleanup();
+}
+
+void fe_Engine::updateWorldData() {
+  fe_WorldData worldData = world->getWorldData(frameContext);
+  worldData.particleBufAddress = bufferMan->particleBufferAddress;
+  worldData.lookupBufAddress = bufferMan->lookupBufferAddress;
+
+  bufferMan->updateWorldBuffer(worldData);
 }

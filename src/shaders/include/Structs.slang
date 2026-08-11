@@ -2,7 +2,7 @@ struct Particle {
   float3 position;
   float density;
   float3 velocity;
-  float value2;
+  uint32_t cellHash;
 };
 
 struct WorldData {
@@ -10,6 +10,12 @@ struct WorldData {
   float4x4 model;
   float4x4 proj;
   float3 cameraPos;
+
+  Particle* particleBufferAddress;
+  uint32_t* particleLookupBufferAddress;
+
+  float3 particleWorldSize;
+
   // Particle params
   float aspect;
   float particleSize;
@@ -20,13 +26,15 @@ struct WorldData {
   float gravity;
   float collisionDampingConst;
   float drag;
+  float mass;
 };
 
 struct PushConstants {
-  Particle* particleBufferAddress;
   WorldData* worldDataBufferAddress;
   float deltaTime;
   uint particleCount;
+  uint data1;
+  uint data2;
 };
 
 struct VSOutput {
@@ -38,4 +46,3 @@ struct VSOutput {
 static const float PI = 3.14159265f;
 static const float E = 2.71828182f;
 
-static const float mass = 1;

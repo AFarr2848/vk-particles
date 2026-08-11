@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <glm/ext/matrix_float4x4.hpp>
+#include <vulkan/vulkan_raii.hpp>
 class fe_TimingData;
 class fe_VulkanContext;
 class fe_Vertex;
@@ -22,6 +23,8 @@ class fe_BufferManager {
 
   void createParticleBuffer();
 
+  void createParticleLookupBuffer();
+
   // Contains vertices and indices
   uint64_t meshBufferAddress;
   vk::raii::Buffer meshBuffer = nullptr;
@@ -37,6 +40,9 @@ class fe_BufferManager {
   uint64_t particleBufferAddress;
   vk::raii::Buffer particleBuffer = nullptr;
 
+  uint64_t lookupBufferAddress;
+  vk::raii::Buffer lookupBuffer = nullptr;
+
   vk::DeviceSize verticesSize;
   vk::DeviceSize indicesSize;
 
@@ -47,5 +53,6 @@ class fe_BufferManager {
   vk::raii::DeviceMemory transformBufferMemory = nullptr;
   vk::raii::DeviceMemory worldBufferMemory = nullptr;
   vk::raii::DeviceMemory particleBufferMemory = nullptr;
+  vk::raii::DeviceMemory lookupBufferMemory = nullptr;
   size_t transformSize;
 };
